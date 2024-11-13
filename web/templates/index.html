@@ -71,28 +71,35 @@
         }
     </style>
 <script>
-    function handleFormSubmission(formId, url, resultDivId) {
-        const form = document.getElementById(formId);
-        const formData = new FormData(form);
-        
-        fetch(url, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            updateTable(data.rows);
-            const messageDiv = document.createElement("div");
-            messageDiv.className = `message ${data.status === 'success' ? 'success' : 'error'}`;
-            messageDiv.innerText = data.message;
-            document.getElementById(resultDivId).innerHTML = '';
-            document.getElementById(resultDivId).appendChild(messageDiv);
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            document.getElementById(resultDivId).innerText = "An error occurred. Please try again.";
-        });
-    }
+function handleFormSubmission(formId, url, resultDivId) {
+    const form = document.getElementById(formId);
+    const formData = new FormData(form);
+    
+    fetch(url, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        updateTable(data.rows);
+        const messageDiv = document.createElement("div");
+        // Add the appropriate classes for success or error messages
+        messageDiv.className = `message ${data.status === 'success' ? 'success' : 'error'}`;
+        messageDiv.innerText = data.message;
+        document.getElementById(resultDivId).innerHTML = '';
+        document.getElementById(resultDivId).appendChild(messageDiv);
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        // Display a default error message in red if there's an issue with the request
+        const errorDiv = document.createElement("div");
+        errorDiv.className = "message error";
+        errorDiv.innerText = "The username and password already exist.";
+        document.getElementById(resultDivId).innerHTML = '';
+        document.getElementById(resultDivId).appendChild(errorDiv);
+    });
+}
+
 
     function updateTable(rows) {
         const tableBody = document.getElementById("table-body");

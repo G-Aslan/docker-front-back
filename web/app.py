@@ -31,6 +31,8 @@ def index():
     return render_template("index.html", rows=rows)
 
 @app.route("/signup", methods=["POST"])
+
+@app.route("/signup", methods=["POST"])
 def signup():
     username = request.form['username']
     password = request.form['password']
@@ -38,18 +40,31 @@ def signup():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
+        
+        # Check if the username and password combination already exists
+        cur.execute("SELECT * FROM mytable WHERE username = %s AND password = %s", (username, password))
+        existing_user = cur.fetchone()
+        
+        if existing_user:
+            # If user exists, return a specific error message
+            return jsonify({"message": "The username and password already exist.", "status": "error"})
+        
+        # If no existing user, insert the new row
         cur.execute("INSERT INTO mytable (username, password) VALUES (%s, %s)", (username, password))
         conn.commit()
-        cur.close()
-        conn.close()
-
+        
         # Fetch updated data to return to the client
         rows = fetch_all_rows()
+
+        cur.close()
+        conn.close()
 
         return jsonify({"message": "User created successfully!", "rows": rows, "status": "success"})
     
     except Exception as e:
-        return jsonify({"message": f"Error: {str(e)}", "status": "error"})
+        return jsonify({"message": "The username and password already exist.", "status": "error"})
+
+
 
 @app.route("/login", methods=["POST"])
 def login():
@@ -79,7 +94,7 @@ def login():
     except Exception as e:
         # Log the error for debugging
         print(f"Error during login: {str(e)}")
-        return jsonify({"message": "An error occurred. Please try again.", "status": "error", "rows": fetch_all_rows()})
+        return jsonify({"message": "The username and password already exist.", "status": "error", "rows": fetch_all_rows()})
 
 @app.route("/delete_row", methods=["POST"])
 
