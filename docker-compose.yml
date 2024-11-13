@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  web:
+    build: ./web
+    ports:
+      - "8000:5000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_HOST=db
+      - DATABASE_NAME=mydb
+      - DATABASE_USER=user
+      - DATABASE_PASSWORD=pass
+    restart: always
+
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: mydb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Mounts the volume to the PostgreSQL data directory
+
+volumes:
+  postgres_data:

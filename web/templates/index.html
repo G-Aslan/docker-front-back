@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Authentication</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            color: #ffffff;
+            font-family: 'Helvetica Neue', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 40px;
+        }
+        .form-container {
+            margin: 20px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        button {
+            background-color: #ffffff;
+            color: #4e54c8;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        input {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: 100%;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .message.success {
+            background-color: #28a745;
+            color: white;
+        }
+        .message.error {
+            background-color: #dc3545;
+            color: white;
+        }
+        table {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            display: none; /* Hide by default */
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+    </style>
+<script>
+    function handleFormSubmission(formId, url, resultDivId) {
+        const form = document.getElementById(formId);
+        const formData = new FormData(form);
+        
+        fetch(url, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateTable(data.rows);
+            const messageDiv = document.createElement("div");
+            messageDiv.className = `message ${data.status === 'success' ? 'success' : 'error'}`;
+            messageDiv.innerText = data.message;
+            document.getElementById(resultDivId).innerHTML = '';
+            document.getElementById(resultDivId).appendChild(messageDiv);
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            document.getElementById(resultDivId).innerText = "An error occurred. Please try again.";
+        });
+    }
+
+    function updateTable(rows) {
+        const tableBody = document.getElementById("table-body");
+        tableBody.innerHTML = '';  // Clear the existing table rows
+
+        rows.forEach(row => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td>`;
+            tableBody.appendChild(tr);
+        });
+    }
+
+    function toggleTable() {
+        const table = document.getElementById('database-table');
+        const button = document.getElementById('toggle-button');
+        if (table.style.display === "none") {
+            table.style.display = "table";
+            button.innerText = "Hide Database";
+        } else {
+            table.style.display = "none";
+            button.innerText = "Show Database";
+        }
+    }
+
+    function deleteAllRows() {
+        fetch('/delete_all', {
+            method: 'POST',
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateTable(data.rows);
+            const messageDiv = document.createElement("div");
+            messageDiv.className = `message ${data.status === 'success' ? 'success' : 'error'}`;
+            messageDiv.innerText = data.message;
+            document.getElementById('delete-all-result').innerHTML = '';
+            document.getElementById('delete-all-result').appendChild(messageDiv);
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            document.getElementById('delete-all-result').innerText = "An error occurred. Please try again.";
+        });
+    }
+</script>
+
+</head>
+<body>
+    <div class="form-container">
+        <h2>Sign Up</h2>
+        <form id="signup-form">
+            <input type="text" name="username" placeholder="Username" required><br><br>
+            <input type="password" name="password" placeholder="Password" required><br><br>
+            <button type="button" onclick="handleFormSubmission('signup-form', '/signup', 'signup-result')">Sign Up</button>
+        </form>
+        <div id="signup-result"></div>
+    </div>
+
+    <div class="form-container">
+        <h2>Login</h2>
+        <form id="login-form">
+            <input type="text" name="username" placeholder="Username" required><br><br>
+            <input type="password" name="password" placeholder="Password" required><br><br>
+            <button type="button" onclick="handleFormSubmission('login-form', '/login', 'login-result')">Login</button>
+        </form>
+        <div id="login-result"></div>
+    </div>
+
+    <div class="form-container">
+        <h2>Delete Row</h2>
+        <form id="delete-row-form">
+            <input type="text" name="username" placeholder="Username" required><br><br>
+            <input type="password" name="password" placeholder="Password" required><br><br>
+            <button type="button" onclick="handleFormSubmission('delete-row-form', '/delete_row', 'delete-row-result')">Delete Row</button>
+        </form>
+        <div id="delete-row-result"></div>
+    </div>
+
+    <div class="form-container">
+        <h2>Delete All Rows</h2>
+        <button type="button" onclick="deleteAllRows()">Delete All Rows</button>
+        <div id="delete-all-result"></div>
+    </div>
+
+    <div class="form-container">
+        <button id="toggle-button" onclick="toggleTable()">Show Database</button>
+        <table id="database-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Password</th>
+                </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+        </table>
+    </div>
+</body>
+</html>
